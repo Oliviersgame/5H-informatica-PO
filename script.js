@@ -1,3 +1,9 @@
+let brug, bomSprite, verliesAfbeelding;
+let canvas, raster, eve, alice, bob, cindy, bommen, bal;
+let startTijd;
+let spelTimer = 30;
+let laatsteBomTijd = 0;
+
 class Raster {
   constructor(r, k) {
     this.aantalRijen = r;
@@ -12,32 +18,26 @@ class Raster {
   teken() {
     push();
     noFill();
-    stroke('black');
-    ellipse(this.x,this.y,this.diameter);
+    stroke('blue');
+    strokeWeight(10);
+    rect(0, 0, canvas.width, canvas.height);
+    stroke('grey');
+    strokeWeight(1);
     for (var rij = 0; rij < this.aantalRijen; rij++) {
       for (var kolom = 0; kolom < this.aantalKolommen; kolom++) {
         rect(kolom * this.celGrootte, rij * this.celGrootte, this.celGrootte, this.celGrootte);
       }
     }
-    stroke('blue')
-    strokeWeight(15);
-    noFill();
-    rect(
-      0,
-      0,
-      this.aantalKolommen * this.celGrootte,
-      this.aantalRijen * this.celGrootte
-    );
     pop();
   }
 }
 
 class Jos {
   constructor() {
-    this.x = 400;
-    this.y = 300;
+    this.x = 0;
+    this.y = 250;
     this.animatie = [];
-    this.frameNummer =  3;
+    this.frameNummer = 3;
     this.stapGrootte = null;
     this.gehaald = false;
   }
@@ -60,140 +60,221 @@ class Jos {
       this.frameNummer = 5;
     }
 
-    this.x = constrain(this.x,0,canvas.width);
-      this.y = constrain(this.y,0,canvas.height - raster.celGrootte);
+    this.x = constrain(this.x, 0, canvas.width - raster.celGrootte);
+    this.y = constrain(this.y, 0, canvas.height - raster.celGrootte);
 
-      if (this.x == canvas.width) {
-        this.gehaald = true;
-      }
+    if (this.x >= canvas.width - raster.celGrootte) {
+      this.gehaald = true;
     }
+  }
 
-    wordtGeraakt(Bom) {
-      if (this.x == Bom.x && this.y == Bom.y) {
-        return true;
-      }
-      else {
-        return false;
-      }
-    }
+  wordtGeraakt(vijand) {
+    return this.x === vijand.x && this.y === vijand.y;
+  }
 
   toon() {
-image(this.animatie[this.frameNummer],this.x,this.y,raster.celGrootte,raster.celGrootte);
-    }
-  }  
+    image(this.animatie[this.frameNummer], this.x, this.y, raster.celGrootte, raster.celGrootte);
+  }
+}
 
-class Bom {
+class Vijand {
   constructor(x, y) {
-    this.diameter = 40;
-    this.straal = this.diameter / 2;
     this.x = x;
     this.y = y;
     this.sprite = null;
     this.stapGrootte = null;
-    this.snelheid = random(1,10);
   }
 
   beweeg() {
-    this.y += this.snelheid;
+    this.x += floor(random(-1, 2)) * this.stapGrootte;
+    this.y += floor(random(-1, 2)) * this.stapGrootte;
 
-    this.x += floor(random(-1,2))*this.stapGrootte;
-    this.y += floor(random(-1,2))*this.stapGrootte;
-
-    this.x = constrain(this.x,0,canvas.width - raster.celGrootte);
-    this.y = constrain(this.y,0,canvas.height - raster.celGrootte);
+    this.x = constrain(this.x, 0, canvas.width - raster.celGrootte);
+    this.y = constrain(this.y, 0, canvas.height - raster.celGrootte);
   }
 
   toon() {
     image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
 }
- class cindy {
-   constructor(x, y) {
-     this.x = x;
-     this.y = y;
-     this.sprite = null;
-     this.stapGrootte = null;
+
+class Bom {
+  constructor(x, snelheid) {
+    this.x = x;
+    this.y = random(0, canvas.height - raster.celGrootte);
+    this.snelheid = random(2, 5)
+    this.richting = 1;
+    this.sprite = bomSprite;
+  }
+
+  beweeg() {
+    
+    this.y += this.snelheid * this.richting;
+    if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
+      this.richting *= -1;
     }
+  }
 
-     beweeg() {
-       this.x += floor(random(-1,2))*this.stapGrootte;
-       this.y += floor(random(-1,2))*this.stapGrootte;
+  toon() {
+    image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
+  }
 
-       this.x = constrain(this.x,0,canvas.width - raster.celGrootte);
-       this.y = constrain(this.y,0,canvas.height - raster.celGrootte);
-     }
+  raaktSpeler(speler) {
+    return dist(this.x, this.y, speler.x, speler.y) < raster.celGrootte;
+  }
+}
 
-   toon() {
-       image(this.sprite,this.x,this.y,raster.celGrootte,raster.celGrootte);
-     }
-   }
+function eindScherm(kleur, boodschap, afbeelding = null) {
+  background(kleur);
+  fill('white');
+  textAlign(CENTER, CENTER);
+  textSize(90);
+  text(boodschap, canvas.width / 2, canvas.height / 2 - 100);
 
+  if (afbeelding) {
+    imageMode(CENTER);
+    image(afbeelding, canvas.width / 2, canvas.height / 2 + 100, 200, 200);
+  }
 
+  noLoop();
+}
 
 function preload() {
-  brug = loadImage("images/backgrounds/abstract.jpg");
+  brug = loadImage("Achtergrondje/achtergrondmooi.jpg");
+  bomSprite = loadImage("images/sprites/bom.png");
+  verliesAfbeelding = loadImage("peter/noFilter.png");
 }
 
 function setup() {
   canvas = createCanvas(900, 600);
   canvas.parent();
-  frameRate(15);
-  textFont("dafont");
+  frameRate(10);
+  textFont("Verdana");
   textSize(90);
-  noStroke();
-  Jos.straal = Jos.diameter/2;
-  Jos.x = Jos.straal;
-  Jos.y = canvas.height/4;
-
 
   raster = new Raster(12, 18);
-
   raster.berekenCelGrootte();
 
   eve = new Jos();
-  eve.stapGrootte = 1 * raster.celGrootte;
+  eve.stapGrootte = raster.celGrootte;
   for (var b = 0; b < 6; b++) {
     frameEve = loadImage("images/sprites/Eve100px/Eve_" + b + ".png");
     eve.animatie.push(frameEve);
   }
 
-  alice = new Bom(700, 200);
-  alice.stapGrootte = 1 * eve.stapGrootte;
-  alice.sprite = loadImage("images/sprites/bom.png");
+  alice = new Vijand(700, 200);
+  alice.stapGrootte = eve.stapGrootte;
+  alice.sprite = loadImage("characters/Chris_Griffin.png");
 
-  bob = new Bom(600, 400);
-  bob.stapGrootte = 1 * eve.stapGrootte;
-  bob.sprite = loadImage("peter/Peter_Griffin.png");
+  bob = new Vijand(600, 400);
+  bob.stapGrootte = eve.stapGrootte;
+  bob.sprite = loadImage("characters/Lois_Griffin.png");
 
-  cook = new cindy(500, 300);
-  cook.stapGrootte = 1 * eve.stapGrootte;
-  cook.sprite = loadImage("bolle jos/sigma.png");
+  cindy = new Vijand(500, 100);
+  cindy.stapGrootte = eve.stapGrootte;
+  cindy.sprite = loadImage("characters/Peter_Griffin.png");
+
+  mindy = new Vijand(400, 300);
+  mindy.stapGrootte = eve.stapGrootte;
+  mindy.sprite = loadImage("characters2/Meg_Griffin.png");
+
+  lindy = new Vijand(300, 500);
+  lindy.stapGrootte = eve.stapGrootte;
+  lindy.sprite = loadImage("characters2/Brian_alcohol.png");
+
+  kinky = new Vijand(100, 600);
+  kinky.stapGrootte = eve.stapGrootte;
+  kinky.sprite = loadImage("characters2/Stewie_Griffin.png");
+
+  bommen = [];
+  for (let i = 0; i < 2; i++) {
+    let kolom = floor(random(raster.aantalKolommen / 2, raster.aantalKolommen));
+    let x = kolom * raster.celGrootte;
+    let snelheid = random(2, 5);
+    bommen.push(new Bom(x, snelheid));
+  }
+
+  bal = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    dx: 5,
+    dy: 5,
+    diameter: raster.celGrootte * 0.6,
+    beweeg() {
+      this.x += this.dx;
+      this.y += this.dy;
+      if (this.x <= 0 || this.x >= canvas.width - this.diameter) this.dx *= -1;
+      if (this.y <= 0 || this.y >= canvas.height - this.diameter) this.dy *= -1;
+    },
+    toon() {
+      fill('white');
+      ellipse(this.x, this.y, this.diameter);
+    },
+    raaktSpeler(speler) {
+      return dist(this.x, this.y, speler.x, speler.y) < raster.celGrootte;
+    }
+  };
+
+  startTijd = millis();
 }
 
 function draw() {
   background(brug);
   raster.teken();
+
+  let verstreken = floor((millis() - startTijd) / 1000);
+  spelTimer = max(0, 30 - verstreken);
+
+  stroke('black');
+  strokeWeight(4);
+  fill('white');
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text(spelTimer, canvas.width / 2, raster.celGrootte / 2);
+  noStroke();
+
+  if (verstreken % 5 === 0 && verstreken !== laatsteBomTijd) {
+    laatsteBomTijd = verstreken;
+    let kolom = floor(random(raster.aantalKolommen / 2, raster.aantalKolommen));
+    let x = kolom * raster.celGrootte;
+    let snelheid = random(2, 5);
+    bommen.push(new Bom(x, snelheid));
+  }
+
   eve.beweeg();
   alice.beweeg();
   bob.beweeg();
-  cook.beweeg()
+  cindy.beweeg();
+  mindy.beweeg();
+  lindy.beweeg();
+  kinky.beweeg();
+  bal.beweeg();
+  for (let bom of bommen) bom.beweeg();
+
   eve.toon();
   alice.toon();
   bob.toon();
-  cook.toon();
+  cindy.toon();
+  mindy.toon();
+  lindy.toon();
+  kinky.toon();
+  bal.toon();
+  for (let bom of bommen) bom.toon();
 
-  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cook)) {
-    background('red');
-    fill('white');
-    text("its tickle time", 30, 300)
-    noLoop();
+  if (
+    eve.wordtGeraakt(alice) ||
+    eve.wordtGeraakt(bob) ||
+    eve.wordtGeraakt(cindy) ||
+    eve.wordtGeraakt(mindy) ||
+    eve.wordtGeraakt(lindy) ||
+    eve.wordtGeraakt(kinky) ||
+    bal.raaktSpeler(eve) ||
+    bommen.some(b => b.raaktSpeler(eve))
+  ) {
+    eindScherm('red', 'Its tickle time!', verliesAfbeelding);
   }
 
   if (eve.gehaald) {
-    background('green');
-    fill('white');
-    text("You won gooner!", 100, 300);
-    text("Glorious", 300, 200);
-    noLoop();
+    eindScherm('green', 'You won glorious!');
   }
 }
