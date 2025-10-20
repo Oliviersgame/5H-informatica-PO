@@ -244,7 +244,12 @@ function draw() {
 
   let verstreken = floor((millis() - startTijd) / 1000);
   spelTimer = max(0, 30 - verstreken);
-
+  
+  if (spelTimer === 0) {
+    eindScherm('red', 'Time’s up!', verliesAfbeelding);
+    return;
+  }
+  
   stroke('black');
   strokeWeight(4);
   fill('white');
