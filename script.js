@@ -4,18 +4,18 @@ let startTijd;
 let spelTimer = 30;
 let laatsteBomTijd = 0;
 let safeZone;
-
+// Klasse voor het raster dat het speelveld opdeelt in hokjes
 class Raster {
   constructor(r, k) {
     this.aantalRijen = r;
     this.aantalKolommen = k;
     this.celGrootte = null;
   }
-
+  // Berekent de grootte van elke cel op basis van het canvas
   berekenCelGrootte() {
     this.celGrootte = canvas.width / this.aantalKolommen;
   }
-
+  // Tekent het raster met blauwe rand en grijze hokjes
   teken() {
     push();
     noFill();
@@ -32,7 +32,7 @@ class Raster {
     pop();
   }
 }
-
+// Klasse voor de speler die bestuurd wordt met WASD
 class Jos {
   constructor() {
     this.x = 0;
@@ -42,7 +42,7 @@ class Jos {
     this.stapGrootte = null;
     this.gehaald = false;
   }
-
+  // Laat de speler bewegen en controleert of hij de overkant heeft gehaald
   beweeg() {
     if (keyIsDown(65)) {
       this.x -= this.stapGrootte;
@@ -68,16 +68,16 @@ class Jos {
       this.gehaald = true;
     }
   }
-
+  // Controleert of de speler geraakt wordt door een vijand
   wordtGeraakt(vijand) {
     return this.x === vijand.x && this.y === vijand.y;
   }
-
+  // Tekent de speler met het juiste animatieframe
   toon() {
     image(this.animatie[this.frameNummer], this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
 }
-
+// Klasse voor vijanden die willekeurig bewegen
 class Vijand {
   constructor(x, y) {
     this.x = x;
@@ -85,7 +85,7 @@ class Vijand {
     this.sprite = null;
     this.stapGrootte = null;
   }
-
+  // Laat de vijand willekeurig bewegen binnen het speelveld
   beweeg() {
     this.x += floor(random(-1, 2)) * this.stapGrootte;
     this.y += floor(random(-1, 2)) * this.stapGrootte;
@@ -93,12 +93,12 @@ class Vijand {
     this.x = constrain(this.x, 0, canvas.width - raster.celGrootte);
     this.y = constrain(this.y, 0, canvas.height - raster.celGrootte);
   }
-
+  // Tekent de vijand op het canvas
   toon() {
     image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
 }
-
+// Klasse voor bommen die op en neer bewegen
 class Bom {
   constructor(x, snelheid) {
     this.x = x;
@@ -107,24 +107,24 @@ class Bom {
     this.richting = 1;
     this.sprite = bomSprite;
   }
-
+  // Laat de bom op en neer bewegen en keren bij de randen
   beweeg() {
-    
+
     this.y += this.snelheid * this.richting;
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.richting *= -1;
     }
   }
-
+  // Tekent de bom op het canvas
   toon() {
     image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
-
+  // Controleert of de bom de speler raakt
   raaktSpeler(speler) {
     return dist(this.x, this.y, speler.x, speler.y) < raster.celGrootte;
   }
 }
-
+// Toont het eindscherm met kleur, boodschap en afbeelding
 function eindScherm(kleur, boodschap, afbeelding = null) {
   background(kleur);
   fill('white');
@@ -139,13 +139,13 @@ function eindScherm(kleur, boodschap, afbeelding = null) {
 
   noLoop();
 }
-
+// Laadt alle benodigde afbeeldingen vóór het spel start
 function preload() {
   brug = loadImage("Achtergrondje/achtergrondmooi.jpg");
   bomSprite = loadImage("images/sprites/bom.png");
-  verliesAfbeelding = loadImage("peter/noFilter.png");
+  verliesAfbeelding = loadImage("characters/noFilter.png");
 }
-
+// Initialiseert het spel: canvas, raster, speler, vijanden, bommen en bal
 function setup() {
   canvas = createCanvas(900, 600);
   canvas.parent();
@@ -155,7 +155,7 @@ function setup() {
 
   raster = new Raster(12, 18);
   raster.berekenCelGrootte();
-
+  // Definieert de veilige zone waar de speler niet geraakt kan worden
   safeZone = {
     x: 0,
     y: 250,
@@ -184,15 +184,15 @@ function setup() {
 
   mindy = new Vijand(400, 300);
   mindy.stapGrootte = eve.stapGrootte;
-  mindy.sprite = loadImage("characters2/Meg_Griffin.png");
+  mindy.sprite = loadImage("characters/Meg_Griffin.png");
 
   lindy = new Vijand(300, 500);
   lindy.stapGrootte = eve.stapGrootte;
-  lindy.sprite = loadImage("characters2/Brian_alcohol.png");
+  lindy.sprite = loadImage("characters/Brian_alcohol.png");
 
   kinky = new Vijand(100, 600);
   kinky.stapGrootte = eve.stapGrootte;
-  kinky.sprite = loadImage("characters2/Stewie_Griffin.png");
+  kinky.sprite = loadImage("characters/Stewie_Griffin.png");
 
   bommen = [];
   for (let i = 0; i < 2; i++) {
@@ -201,23 +201,25 @@ function setup() {
     let snelheid = random(2, 5);
     bommen.push(new Bom(x, snelheid));
   }
-
+  // Object voor de pingpongbal die diagonaal stuitert
   bal = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     dx: 5,
     dy: 5,
     diameter: raster.celGrootte * 0.6,
-    beweeg() {
+    beweeg() {     // Laat de bal bewegen en stuiteren tegen de randen
       this.x += this.dx;
       this.y += this.dy;
       if (this.x <= 0 || this.x >= canvas.width - this.diameter) this.dx *= -1;
       if (this.y <= 0 || this.y >= canvas.height - this.diameter) this.dy *= -1;
     },
+    // Tekent de bal op het canvas
     toon() {
       fill('white');
       ellipse(this.x, this.y, this.diameter);
     },
+    // Controleert of de bal de speler raakt
     raaktSpeler(speler) {
       return dist(this.x, this.y, speler.x, speler.y) < raster.celGrootte;
     }
@@ -225,15 +227,15 @@ function setup() {
 
   startTijd = millis();
 }
-
+// Controleert of de speler zich in de veilige startzone bevindt
 function inSafeZone(speler) {
   return speler.x === safeZone.x && speler.y === safeZone.y;
 }
-
+// Hoofdfunctie die elk frame tekent, objecten beweegt, timer bijhoudt en botsingen checkt
 function draw() {
   background(brug);
   raster.teken();
-  
+
   push();
   noFill();
   stroke('blue');
@@ -244,12 +246,12 @@ function draw() {
 
   let verstreken = floor((millis() - startTijd) / 1000);
   spelTimer = max(0, 30 - verstreken);
-  
+  // Als de tijd op is, verliest de speler en wordt het eindscherm getoond
   if (spelTimer === 0) {
     eindScherm('red', 'Time’s up!', verliesAfbeelding);
     return;
   }
-  
+
   stroke('black');
   strokeWeight(4);
   fill('white');
@@ -257,7 +259,7 @@ function draw() {
   textAlign(CENTER, CENTER);
   text(spelTimer, canvas.width / 2, raster.celGrootte / 2);
   noStroke();
-
+  // Elke 5 seconden wordt er een nieuwe bom toegevoegd aan het spel
   if (verstreken % 5 === 0 && verstreken !== laatsteBomTijd) {
     laatsteBomTijd = verstreken;
     let kolom = floor(random(raster.aantalKolommen / 2, raster.aantalKolommen));
@@ -285,7 +287,7 @@ function draw() {
   kinky.toon();
   bal.toon();
   for (let bom of bommen) bom.toon();
-
+  // Controleert of de speler geraakt wordt door vijanden, bommen of bal (behalve in safe zone)
   if (
     !inSafeZone(eve) && (
       eve.wordtGeraakt(alice) ||
@@ -300,7 +302,7 @@ function draw() {
   ) {
     eindScherm('red', 'Its tickle time!', verliesAfbeelding);
   }
-
+  // Als de speler de overkant haalt, wint hij en wordt het groene eindscherm getoond
   if (eve.gehaald) {
     eindScherm('green', 'You won glorious!');
   }
