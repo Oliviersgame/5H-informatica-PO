@@ -3,6 +3,7 @@ let canvas, raster, eve, alice, bob, cindy, bommen, bal;
 let startTijd;
 let spelTimer = 30;
 let laatsteBomTijd = 0;
+let safeZone;
 
 class Raster {
   constructor(r, k) {
@@ -155,6 +156,13 @@ function setup() {
   raster = new Raster(12, 18);
   raster.berekenCelGrootte();
 
+  safeZone = {
+    x: 0,
+    y: 250,
+    w: raster.celGrootte,
+    h: raster.celGrootte
+  };
+
   eve = new Jos();
   eve.stapGrootte = raster.celGrootte;
   for (var b = 0; b < 6; b++) {
@@ -218,9 +226,21 @@ function setup() {
   startTijd = millis();
 }
 
+function inSafeZone(speler) {
+  return speler.x === safeZone.x && speler.y === safeZone.y;
+}
+
 function draw() {
   background(brug);
   raster.teken();
+  
+  push();
+  noFill();
+  stroke('blue');
+  strokeWeight(4);
+  rect(safeZone.x, safeZone.y, safeZone.w, safeZone.h);
+  pop();
+
 
   let verstreken = floor((millis() - startTijd) / 1000);
   spelTimer = max(0, 30 - verstreken);
@@ -262,14 +282,16 @@ function draw() {
   for (let bom of bommen) bom.toon();
 
   if (
-    eve.wordtGeraakt(alice) ||
-    eve.wordtGeraakt(bob) ||
-    eve.wordtGeraakt(cindy) ||
-    eve.wordtGeraakt(mindy) ||
-    eve.wordtGeraakt(lindy) ||
-    eve.wordtGeraakt(kinky) ||
-    bal.raaktSpeler(eve) ||
-    bommen.some(b => b.raaktSpeler(eve))
+    !inSafeZone(eve) && (
+      eve.wordtGeraakt(alice) ||
+      eve.wordtGeraakt(bob) ||
+      eve.wordtGeraakt(cindy) ||
+      eve.wordtGeraakt(mindy) ||
+      eve.wordtGeraakt(lindy) ||
+      eve.wordtGeraakt(kinky) ||
+      bal.raaktSpeler(eve) ||
+      bommen.some(b => b.raaktSpeler(eve))
+    )
   ) {
     eindScherm('red', 'Its tickle time!', verliesAfbeelding);
   }
