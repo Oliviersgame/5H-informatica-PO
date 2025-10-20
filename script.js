@@ -10,6 +10,8 @@ let laatsteAppelTijd = 0;
 let safeZone;
 let levens = 3;
 let appels = [];
+let achtergrondMuziek;
+
 
 // Klasse voor het raster dat het speelveld opdeelt in hokjes
 class Raster {
@@ -148,6 +150,7 @@ function preload() {
   appelRood = loadImage("images/sprites/appel_2.png");
   hartRood = loadImage("Hartjes/hart_1.png");
   hartZwart = loadImage("Hartjes/hart_2.png");
+  achtergrondMuziek = loadSound('FamilyGuySong/SurfinBird.ogg');
 }
 
 function shakeScreen() {
@@ -159,6 +162,7 @@ function setup() {
   canvas = createCanvas(900, 600);
   frameRate(7);
   textFont("Verdana");
+  achtergrondMuziek.loop(); // Start achtergrondmuziek en herhaal continu
 
   raster = new Raster(12, 18);
   raster.berekenCelGrootte();
