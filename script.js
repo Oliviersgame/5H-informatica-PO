@@ -11,6 +11,8 @@ let safeZone;
 let levens = 3;
 let appels = [];
 let achtergrondMuziek;
+let clevelandMuziek;
+let surfinBird;
 
 
 // Klasse voor het raster dat het speelveld opdeelt in hokjes
@@ -141,17 +143,29 @@ class Appel {
   }
 }
 
+function Beginscherm() {
+ push();
+ noFill();
+ stroke('black');
+ strokeWeight(5);
+ textSize(150);
+ text('Press Enter to start', canvas.width / 2, canvas.height / 2);
+ pop();
+}
+ 
 // Laadt alle benodigde afbeeldingen vóór het spel start
 function preload() {
-  brug = loadImage("Achtergrondje/achtergrondmooi.jpg");
+  achtergrond = loadImage("Cleveland/Cleveland_Brown.png")
+  brug = loadImage("Background/BackgroundC.jpg");
   bomSprite = loadImage("images/sprites/bom.png");
   verliesAfbeelding = loadImage("characters/noFilter.png");
   appelGroen = loadImage("images/sprites/appel_1.png");
   appelRood = loadImage("images/sprites/appel_2.png");
   hartRood = loadImage("Hartjes/hart_1.png");
   hartZwart = loadImage("Hartjes/hart_2.png");
-  achtergrondMuziek = loadSound('FamilyGuySong/SurfinBird.ogg');
-}
+  clevelandMuziek = loadSound('Cleveland/Clevelandsong.mp3');
+  surfinBird = loadSound('FamilyGuySong/SurfinBird.ogg');
+  }
 
 function shakeScreen() {
   translate(random(-5,5), random(-5,5));
@@ -162,7 +176,15 @@ function setup() {
   canvas = createCanvas(900, 600);
   frameRate(7);
   textFont("Verdana");
-  achtergrondMuziek.loop(); // Start achtergrondmuziek en herhaal continu
+  // Kies willekeurig een van de twee
+   clevelandMuziek.setVolume(0.4);
+  if (random() < 0.5) {
+    achtergrondMuziek = clevelandMuziek;
+  } else {
+    achtergrondMuziek = surfinBird;
+  }
+
+  achtergrondMuziek.loop(); // Start en herhaal
 
   raster = new Raster(12, 18);
   raster.berekenCelGrootte();
