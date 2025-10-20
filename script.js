@@ -155,7 +155,7 @@ function Beginscherm() {
  
 // Laadt alle benodigde afbeeldingen vóór het spel start
 function preload() {
-  achtergrond = loadImage("Cleveland/Cleveland_Brown.png")
+  achtergrond = loadImage("Cleveland/Cleveland_Brown.png");
   brug = loadImage("Background/BackgroundC.jpg");
   bomSprite = loadImage("images/sprites/bom.png");
   verliesAfbeelding = loadImage("characters/noFilter.png");
