@@ -1,4 +1,5 @@
-// Deze code is geschreven door Olivier Hol en Jozua Aron
+// Deze code is geschreven door Olivier Hol en Jozua Aron 
+// Deze code gebruikt geluid en zet dus geluid aan op je computer voor optimale beleving!!!
 // Globale variabelen en assets
 let brug, bomSprite, verliesAfbeelding;
 let appelGroen, appelRood, hartRood, hartZwart;
@@ -145,6 +146,7 @@ class Appel {
 
 function Beginscherm() {
  push();
+ background(achtergrond);
  noFill();
  stroke('black');
  strokeWeight(5);
@@ -174,7 +176,7 @@ function shakeScreen() {
 // Initialiseert het spel: canvas, raster, speler, vijanden, bommen en bal
 function setup() {
   canvas = createCanvas(900, 600);
-  frameRate(7);
+  frameRate(1);
   textFont("Verdana");
   // Kies willekeurig een van de twee
    clevelandMuziek.setVolume(0.4);
