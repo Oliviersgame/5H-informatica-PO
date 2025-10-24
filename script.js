@@ -176,7 +176,7 @@ function shakeScreen() {
 // Initialiseert het spel: canvas, raster, speler, vijanden, bommen en bal
 function setup() {
   canvas = createCanvas(900, 600);
-  frameRate(1);
+  frameRate(5);
   textFont("Verdana");
   // Kies willekeurig een van de twee
    clevelandMuziek.setVolume(0.4);
